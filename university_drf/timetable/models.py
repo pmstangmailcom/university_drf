@@ -50,13 +50,3 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f'{self.lesson_date} - {self.lecture}'
-
-
-class Timetable(models.Model):
-    lesson = models.ForeignKey(Lesson, related_name='lessons', verbose_name='lesson', on_delete=models.RESTRICT)
-    group = models.ForeignKey(StudentGroup, related_name='timetable_for_group', verbose_name='group',
-                              on_delete=models.RESTRICT)
-    timetable_date = models.DateField()
-
-    def __str__(self):
-        return f'Timetable for {self.group} - {self.timetable_date}'

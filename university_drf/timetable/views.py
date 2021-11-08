@@ -1,15 +1,18 @@
+from datetime import datetime
+
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 
 from rest_framework import generics
 
-from .models import StudentGroup, Student, Lecture, LessonRoom, Lesson, Timetable
-
+from .models import StudentGroup, Student, Lecture, LessonRoom, Lesson
 from .serializers import (StudentGroupListSerializer, StudentListSerializer,
                           StudentGroupDetailSerializer, StudentDetailSerializer,
                           UserSerializer, LectureSerializer, LessonRoomSerializer,
                           LessonListSerializer, LessonDetailSerializer, TimetableSerializer)
 
-from .services import get_timetable_today_for_groups, write_json_file
+from .services import get_timetable_today_for_groups, write_json_file, get_date_today, send_timetable, get_users_email
+from .tasks import send_timetable_today
 
 
 class UserList(generics.ListAPIView):
@@ -101,6 +104,19 @@ class LessonCreateView(generics.CreateAPIView):
     serializer_class = LessonDetailSerializer
 
 
-class TimetableView(generics.ListAPIView):
-    """Represent a Timetable"""
-    pass
+class TimetableView(generics.ListAPIView): # Need to correct,
+    """Represent a Timetable for today"""
+    #  Endpoint '/api/timetable/' does not work correctly.
+    #  TimetableView (or LessonForTimetableSerializer) need to correct.
+    #  It don't show groups not having lesson today (it's right), but timetable for groups having lesson today
+    #  include not today's lessons for these groups
+    #  Function 'get_timetable_today_for_groups' for json file is correct.
+    date = get_date_today()
+    queryset = StudentGroup.objects.all().filter(lesson_for_group__lesson_date=date).distinct('number')
+    serializer_class = TimetableSerializer
+
+    # Write today timetable to the json file
+    groups = queryset.values('number')
+    data = get_timetable_today_for_groups(groups)
+    write_json_file(data, 'timetable.json')
+

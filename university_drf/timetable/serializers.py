@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import StudentGroup, Student, Lecture, LessonRoom, Lesson, Timetable
+from .models import StudentGroup, Student, Lecture, LessonRoom, Lesson
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -88,8 +88,23 @@ class LessonDetailSerializer(serializers.ModelSerializer):
         fields = ('lecture', 'student_group', 'lecture_room', 'lesson_date', 'id')
         read_only_fields = ('id',)
 
-class TimetableSerializer(serializers.ModelSerializer):
+
+class LessonForTimetableSerializer(serializers.ModelSerializer):
+    """Serializer for lesson showing the information necessary in timetable"""
+    lecture = serializers.SlugRelatedField(slug_field='title', queryset=Lecture.objects.all())
+    lecture_room = serializers.SlugRelatedField(slug_field='number', queryset=LessonRoom.objects.all())
+    lesson_date = serializers.DateField()
+
+    class Meta:
+        model = Lesson
+        fields = ('lecture', 'lecture_room', 'lesson_date', 'id')
+
+
+class TimetableSerializer(serializers.ModelSerializer):  # почти работает, не удалять
     """Serializer for timetable"""
-    pass
+    lesson_for_group = LessonForTimetableSerializer(many=True, read_only=True)
+    group_number = serializers.CharField(source='number')
 
-
+    class Meta:
+        model = StudentGroup
+        fields = ('group_number', 'lesson_for_group')

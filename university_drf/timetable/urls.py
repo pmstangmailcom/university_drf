@@ -19,7 +19,7 @@ urlpatterns = [
     path('students/<int:pk>/', StudentDetailView.as_view()),
     path('student/', StudentCreateView.as_view()),
 
-    path('lectures/', LectureListView.as_view()),
+    path('lectures/', LectureListView.as_view(), name='list_lectures'),
     path('lectures/<int:pk>/', LectureDetailView.as_view()),
 
     path('rooms/', LessonRoomListView.as_view()),

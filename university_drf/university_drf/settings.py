@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 
+from celery.schedules import crontab
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -87,7 +90,10 @@ DATABASES = {
         'PORT': '',
     }
 }
+REST_FRAMEWORK = {
 
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+}
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -134,10 +140,24 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'myemail@gmail.com'
+EMAIL_HOST_USER = 'my_email@gmail.com'
 EMAIL_HOST_PASSWORD = 'password'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'default from email'
+
+
+# Celery
+CELERY_BROKER_URL = 'redis://localhost:6379'
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+CELERY_BEAT_SCHEDULE = {
+    'send every day': {
+        'task': 'timetable.tasks.send_timetable_today',
+        'schedule': crontab(minute=0, hour=6),
+    },
+}
 
 
